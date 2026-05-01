@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FixedSizeGrid as Grid } from "react-window";
 import { useProductStore } from "../store/productStore";
+import { useFilteredProducts } from "../hooks/useProducts";
 import ProductCard from "./ProductCard";
 
 const ROW_HEIGHT = 340;
 
 const ProductGrid = () => {
-  const products = useProductStore((s) => s.filteredProducts);
-  const total = useProductStore((s) => s.filteredTotal);
+  // ✅ get derived data from hook (NOT store)
+  const { products, total } = useFilteredProducts();
+
   const setSelectedProduct = useProductStore((s) => s.setSelectedProduct);
   const resetFilters = useProductStore((s) => s.resetFilters);
   const searchQuery = useProductStore((s) => s.searchQuery);
@@ -17,29 +19,30 @@ const ProductGrid = () => {
 
   const [gridSize, setGridSize] = useState({
     width: 0,
-    height: 400,
+    height: 600,
   });
 
+  // ✅ better resize handling
   useEffect(() => {
     const updateSize = () => {
       if (!containerRef.current) return;
+
       const rect = containerRef.current.getBoundingClientRect();
+
       if (rect.width === 0) return;
+
       setGridSize({
         width: rect.width,
-        height: rect.height || 400,
+        height: rect.height || 600,
       });
     };
 
-    const raf = requestAnimationFrame(updateSize);
+    updateSize();
 
     const observer = new ResizeObserver(updateSize);
     if (containerRef.current) observer.observe(containerRef.current);
 
-    return () => {
-      cancelAnimationFrame(raf);
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   const handleClick = useCallback(
@@ -47,6 +50,7 @@ const ProductGrid = () => {
     [setSelectedProduct],
   );
 
+  // ✅ responsive columns
   const getColCount = (width: number) => {
     if (width >= 1280) return 5;
     if (width >= 1024) return 4;
@@ -60,6 +64,7 @@ const ProductGrid = () => {
   const rowCount = Math.ceil(products.length / colCount);
   const safeWidth = Math.max(gridSize.width, colCount * colWidth) + 40;
 
+  // memoized cell renderer
   const Cell = useCallback(
     ({
       columnIndex,
@@ -73,20 +78,17 @@ const ProductGrid = () => {
       const index = rowIndex * colCount + columnIndex;
       const product = products[index];
 
-      if (!product) return <div style={style} />;
+      if (!product) return null;
 
       return (
         <div
           style={{
             ...style,
-            padding: "8px",
+            padding: 8,
             boxSizing: "border-box",
-            overflow: "hidden", // 👈 prevent inner overflow
           }}
         >
-          <div style={{ height: "100%" }}>
-            <ProductCard product={product} onClick={handleClick} />
-          </div>
+          <ProductCard product={product} onClick={handleClick} />
         </div>
       );
     },
@@ -108,7 +110,7 @@ const ProductGrid = () => {
         {isFiltered && (
           <button
             onClick={resetFilters}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
             Clear Filters
           </button>
@@ -118,23 +120,25 @@ const ProductGrid = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-      <p className="text-sm text-gray-500 mb-2 shrink-0">
+    <div className="flex-1 flex flex-col min-h-0">
+      <p className="text-sm text-gray-500 mb-2">
         Showing {products.length} of {total} products
       </p>
 
-      {/* 🔥 IMPORTANT: min-h-0 */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-x-hidden">
-        <Grid
-          columnCount={colCount}
-          columnWidth={colWidth}
-          rowCount={rowCount}
-          rowHeight={ROW_HEIGHT}
-          height={gridSize.height}
-          width={safeWidth || 300}
-        >
-          {Cell}
-        </Grid>
+      <div ref={containerRef} className="flex-1 min-h-0">
+        {gridSize.width > 0 && (
+          <Grid
+            columnCount={colCount}
+            columnWidth={colWidth}
+            rowCount={rowCount}
+            rowHeight={ROW_HEIGHT}
+            height={gridSize.height}
+            width={safeWidth}
+            overscanRowCount={2} // ✅ smoother scroll
+          >
+            {Cell}
+          </Grid>
+        )}
       </div>
     </div>
   );

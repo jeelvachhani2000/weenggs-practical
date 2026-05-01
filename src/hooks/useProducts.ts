@@ -9,7 +9,6 @@ export function useProductsQuery() {
   return useQuery({
     queryKey: queryKeys.products,
     queryFn: ({ signal }) => fetchProducts(signal),
-    // Prevent unnecessary refetches — products don't change during a session
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -24,59 +23,51 @@ export function useCategoriesQuery() {
   });
 }
 
-/**
- * Runs filtering ONCE and writes results into the store.
- * Both ProductGrid and Pagination read from the store — no duplicate work.
- * Call this hook exactly once, at the Dashboard level.
- */
 export function useFilteredProducts() {
   const { data: products = [] } = useProductsQuery();
-  const searchQuery = useProductStore((s) => s.searchQuery);
-  const selectedCategory = useProductStore((s) => s.selectedCategory);
-  const priceRange = useProductStore((s) => s.priceRange);
-  const currentPage = useProductStore((s) => s.currentPage);
-  const pageSize = useProductStore((s) => s.pageSize);
-  const setFilteredResult = useProductStore((s) => s.setFilteredResult);
 
+  const { searchQuery, selectedCategory, priceRange, currentPage, pageSize } =
+    useProductStore();
+
+  // 🔥 filter
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
     return products.filter((p: Product) => {
-      // Guard: skip malformed products
-      if (!p || typeof p.price !== "number" || !p.title || !p.category)
-        return false;
+      if (!p) return false;
 
-      const matchSearch = q ? p.title.toLowerCase().includes(q) : true;
-      const matchCategory = selectedCategory
-        ? p.category === selectedCategory
-        : true;
-      const matchPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
+      if (q && !p.title.toLowerCase().includes(q)) return false;
+      if (selectedCategory && p.category !== selectedCategory) return false;
+      if (p.price < priceRange[0] || p.price > priceRange[1]) return false;
 
-      return matchSearch && matchCategory && matchPrice;
+      return true;
     });
   }, [products, searchQuery, selectedCategory, priceRange]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  // 🔥 pagination
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(currentPage, totalPages);
 
-  const paginated = useMemo(
-    () => filtered.slice((safePage - 1) * pageSize, safePage * pageSize),
-    [filtered, safePage, pageSize],
-  );
+  const paginated = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, safePage, pageSize]);
 
-  // Write results into store once — shared with Pagination, no re-computation
-  useEffect(() => {
-    setFilteredResult(paginated, filtered.length, totalPages);
-  }, [paginated, filtered.length, totalPages, setFilteredResult]);
-
-  return { products: paginated, total: filtered.length, totalPages };
+  return {
+    products: paginated,
+    total,
+    totalPages,
+    currentPage: safePage,
+  };
 }
 
-/**
- * O(1) product lookup by ID using a memoized index map.
- * Used by ProductModal instead of Array.find() over all products.
- */
 export function useProductIndex(): Map<number, Product> {
   const { data: products = [] } = useProductsQuery();
-  return useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+
+  return useMemo(() => {
+    const map = new Map<number, Product>();
+    for (const p of products) map.set(p.id, p);
+    return map;
+  }, [products]);
 }

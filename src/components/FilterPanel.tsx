@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { useProductStore } from "../store/productStore";
 import { useCategoriesQuery } from "../hooks/useProducts";
+import SearchBar from "./SearchBar";
 
 const FilterPanel = memo(() => {
   const { data: categories = [] } = useCategoriesQuery();
@@ -12,6 +13,10 @@ const FilterPanel = memo(() => {
 
   return (
     <div className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-xl shadow-sm">
+      <div className="w-full sm:w-96">
+        {/* search */}
+        <SearchBar />
+      </div>
       {/* Category */}
       <select
         value={selectedCategory}

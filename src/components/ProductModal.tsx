@@ -6,7 +6,6 @@ const ProductModal = () => {
   const selectedProductId = useProductStore((s) => s.selectedProductId);
   const setSelectedProduct = useProductStore((s) => s.setSelectedProduct);
 
-  // O(1) lookup — Map<id, Product> built once, not Array.find() on every render
   const productIndex = useProductIndex();
   const product =
     selectedProductId != null

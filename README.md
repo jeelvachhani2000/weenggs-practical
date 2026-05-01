@@ -1,51 +1,75 @@
 # 🚀 Product Dashboard
 
-A high-performance product dashboard built using modern React practices with a focus on scalability, performance, and clean architecture.
+A **high-performance, scalable product dashboard** built using modern React architecture and best practices.  
+This project focuses on **efficient data handling, optimized rendering, and clean separation of concerns**, making it production-ready for large-scale applications.
 
 ---
 
 ## 📦 Tech Stack
 
-- React (Latest) + TypeScript
-- Vite
-- Zustand
-- React Query (TanStack Query)
-- Axios
-- TailwindCSS
-- react-window
+- **React (Latest) + TypeScript** — Type-safe, modern UI development
+- **Vite** — Fast build tool with optimized dev experience
+- **Zustand** — Lightweight global state management
+- **React Query (TanStack Query)** — Server state management, caching & async handling
+- **Axios** — API communication layer
+- **TailwindCSS** — Utility-first responsive styling
+- **react-window** — Virtualized rendering for large datasets
 
 ---
 
 ## ⚡ Features
 
-### Core Features
+### ✅ Core Features
 
-- Fetch product list from public API
-- Debounced search
-- Filter by category and price range
-- Pagination support
-- Product detail modal
-
-### Performance Features
-
-- Virtualized rendering using react-window
-- Prevent unnecessary re-renders
-- Optimized API calls (caching, deduplication)
-- Lazy loading
-
-### UI Features
-
-- Responsive layout
-- Loading and error states
-- Clean UI
+- Fetch product list from a public API
+- Debounced search input (optimized user input handling)
+- Advanced filtering:
+  - Category-based filtering
+  - Price range filtering
+- Pagination support for controlled data display
+- Product detail modal with dynamic rendering
 
 ---
 
-## 🛠️ Setup (Yarn)
+### ⚡ Performance Optimizations
+
+- **React Query**
+  - Automatic caching
+  - Background refetching
+  - Request deduplication
+  - Stale data management
+
+- **Virtualized Rendering (react-window)**
+  - Only renders visible items
+  - Handles large datasets efficiently (10k+ items)
+
+- **Optimized Rendering**
+  - React.memo
+  - useCallback
+  - useMemo
+
+- **Debounced Search**
+  - Prevents unnecessary filtering/API calls
+
+- **Lazy Loading**
+  - Improves initial load performance
+
+---
+
+### 🎨 UI Features
+
+- Fully responsive layout
+- Clean UI using TailwindCSS
+- Loading states
+- Error handling with retry
+
+---
+
+## 🛠️ Setup Instructions
 
 ```bash
 git clone https://github.com/jeelvachhani2000/weenggs-practical.git
-cd weenggs-practica
+cd weenggs-practical
 yarn install
 yarn dev
 ```
@@ -59,40 +83,70 @@ src/
   api/
   components/
   hooks/
-  middleware/
   pages/
   store/
   types/
+  utils/
 ```
 
 ---
 
-## Trade-offs
+## 🧠 Architecture Overview
 
-**Client-side filtering** — Works for small datasets. Should move to backend for scalability.
-
-**No auth layer** — Axios interceptor placeholder exists for token handling.
-
-**Virtualization vs pagination** — Both used for demo. In production:
-
-- Use server pagination OR
-- Use full virtualization
-
----
-
-## Scaling to Production
-
-1. Move filtering/search to backend (debounced params)
-2. Use cursor-based pagination
-3. Add React Query `keepPreviousData`
-4. Replace console logs with Sentry/Datadog
-5. Add CDN/service worker for images
-6. Handle 100k+ items via backend + optional WASM search
+```
+UI Layer (React Components)
+        ↓
+Hooks Layer (Custom Hooks + React Query)
+        ↓
+State Management
+   - Zustand (Client State)
+   - React Query Cache (Server State)
+        ↓
+API Layer (Axios)
+        ↓
+External API
+```
 
 ---
 
-## Notes
+## ⚖️ Trade-offs
 
-- Built with performance-first mindset
-- Clean architecture
-- Production-ready patterns
+- Client-side filtering (not scalable)
+- Pagination + virtualization together
+- No authentication layer
+
+---
+
+## 🚀 Scaling Strategy
+
+- Backend filtering & search
+- Cursor-based pagination
+- Request cancellation
+- Redis caching
+- CDN integration
+- Monitoring (Sentry)
+
+---
+
+## ❓ Answers
+
+### Prevent re-renders
+
+- React.memo
+- useCallback
+- useMemo
+- Zustand selectors
+
+### Zustand vs Redux
+
+- Zustand = simple
+- Redux = scalable
+
+### Large datasets
+
+- Backend pagination
+- Virtualization
+
+### Cancel API calls
+
+- AbortController with React Query

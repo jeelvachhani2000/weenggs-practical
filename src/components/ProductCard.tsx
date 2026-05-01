@@ -16,7 +16,6 @@ const ProductCard = memo(({ product, onClick }: Props) => {
       aria-label={`View details for ${product.title}`}
       className="h-full bg-white rounded-xl shadow hover:shadow-lg transition-all duration-200 cursor-pointer p-4 flex flex-col gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
-      {/* Image — fixed height */}
       <div className="h-48 flex items-center justify-center overflow-hidden flex-shrink-0">
         <img
           src={product.image}

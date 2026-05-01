@@ -1,9 +1,8 @@
 import { Component, type ReactNode } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode; // optional custom fallback UI
+  fallback?: ReactNode;
 }
 
 interface State {
@@ -11,7 +10,6 @@ interface State {
   error: Error | null;
 }
 
-// ─── Class (required by React for error boundaries) ───────────────
 class ErrorBoundaryClass extends Component<Props, State> {
   state: State = { hasError: false, error: null };
 
@@ -20,7 +18,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    // In production: send to Sentry/Datadog
     console.warn("ErrorBoundary caught:", error, info.componentStack);
   }
 
@@ -30,7 +27,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // Use custom fallback if provided
       if (this.props.fallback) return this.props.fallback;
 
       return (
@@ -57,7 +53,6 @@ class ErrorBoundaryClass extends Component<Props, State> {
   }
 }
 
-// ─── Functional Wrapper (use this everywhere in your app) ─────────
 const ErrorBoundary = ({ children, fallback }: Props) => {
   return (
     <ErrorBoundaryClass fallback={fallback}>{children}</ErrorBoundaryClass>

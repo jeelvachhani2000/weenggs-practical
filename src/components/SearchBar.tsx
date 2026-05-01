@@ -3,13 +3,20 @@ import { useDebounce } from "../hooks/useDebounce";
 import { useProductStore } from "../store/productStore";
 
 const SearchBar = memo(() => {
+  const searchQuery = useProductStore((s) => s.searchQuery);
   const setSearch = useProductStore((s) => s.setSearch);
-  const [input, setInput] = useState("");
+
+  const [input, setInput] = useState(searchQuery);
+
   const debounced = useDebounce(input, 400);
 
   useEffect(() => {
     setSearch(debounced);
   }, [debounced, setSearch]);
+
+  useEffect(() => {
+    setInput(searchQuery);
+  }, [searchQuery]);
 
   return (
     <input

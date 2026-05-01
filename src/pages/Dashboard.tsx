@@ -21,9 +21,6 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900 whitespace-nowrap">
             🛒 Product Dashboard
           </h1>
-          <div className="w-full sm:w-96">
-            <SearchBar />
-          </div>
         </div>
       </header>
 
@@ -42,8 +39,6 @@ const Dashboard = () => {
 
         {!isLoading && !isError && (
           <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-            {" "}
-            {/* 👈 add min-h-0 */}
             <ProductGrid />
             <Pagination />
           </div>
